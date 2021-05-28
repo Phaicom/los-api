@@ -32,6 +32,27 @@ namespace los_api.Controllers
       }
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetOne(Guid id)
+    {
+      try
+      {
+        var stock = await _stockRepository.GetById(id);
+        if (stock != null)
+        {
+          return Ok(stock);
+        }
+        else
+        {
+          return NotFound();
+        }
+      }
+      catch (System.Exception ex)
+      {
+        return BadRequest(ex);
+      }
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody][Bind("Id,ProductId,Amount")] Stock stock)
     {

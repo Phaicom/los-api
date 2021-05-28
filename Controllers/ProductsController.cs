@@ -46,6 +46,33 @@ namespace los_api.Controllers
       }
     }
 
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetOne(Guid id)
+    {
+      try
+      {
+        var product = await _productRepository.GetById(id);
+        if (product != null)
+        {
+          var productDto = JsonConvert.DeserializeObject<ProductDto>(JsonConvert.SerializeObject(product));
+          var stock = await _stockRepository.GetByProductId(productDto.Id);
+          if (stock != null)
+          {
+            productDto.stock = stock;
+          }
+          return Ok(productDto);
+        }
+        else
+        {
+          return NotFound();
+        }
+      }
+      catch (System.Exception ex)
+      {
+        return BadRequest(ex);
+      }
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create([FromBody][Bind("Id,Name,ImageUrl,Price")] Product product)
     {

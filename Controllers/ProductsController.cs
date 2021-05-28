@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using los_api.Data;
 using los_api.Models;
+using los_api.Dto;
+using Newtonsoft.Json;
 
 namespace los_api.Controllers
 {
@@ -24,7 +26,19 @@ namespace los_api.Controllers
     {
       try
       {
-        return Ok(await _productRepository.GetAll());
+        var products = await _productRepository.GetAll();
+        var productsDto = new List<ProductDto>();
+        foreach (Product product in products)
+        {
+          var productDto = JsonConvert.DeserializeObject<ProductDto>(JsonConvert.SerializeObject(product));
+          var stock = await _stockRepository.GetByProductId(productDto.Id);
+          if (stock != null)
+          {
+            productDto.stock = stock;
+          }
+          productsDto.Add(productDto);
+        }
+        return Ok(productsDto);
       }
       catch (System.Exception ex)
       {

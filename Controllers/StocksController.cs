@@ -24,7 +24,7 @@ namespace los_api.Controllers
     {
       try
       {
-        return Ok(await _context.Stock.ToListAsync());
+        return Ok(await _stockRepository.GetAll());
       }
       catch (System.Exception ex)
       {
@@ -37,17 +37,12 @@ namespace los_api.Controllers
     {
       try
       {
-        if (ModelState.IsValid && ProductExists(stock.ProductId))
+        if (ModelState.IsValid && _productRepository.isExists(stock.ProductId))
         {
-          var existStock = await _context.Stock.FirstOrDefaultAsync(s => s.ProductId == stock.ProductId);
-
+          var existStock = await _stockRepository.GetByProductId(stock.ProductId);
           if (existStock == null)
           {
-
-            stock.Id = Guid.NewGuid();
-            _context.Stock.Add(stock);
-            await _context.SaveChangesAsync();
-            return Ok(stock);
+            return Ok(await _stockRepository.Create(stock));
           }
           else
           {
@@ -70,18 +65,14 @@ namespace los_api.Controllers
     {
       try
       {
-        if (ModelState.IsValid && ProductExists(stock.ProductId))
+        if (ModelState.IsValid && _productRepository.isExists(stock.ProductId))
         {
-          if (StockExists(id))
+          if (_stockRepository.isExists(id))
           {
-            var existStock = await _context.Stock.FirstOrDefaultAsync(s => s.ProductId == stock.ProductId);
+            var existStock = await _stockRepository.GetByProductId(stock.ProductId);
             if (existStock == null)
             {
-
-              stock.Id = id;
-              _context.Stock.Update(stock);
-              await _context.SaveChangesAsync();
-              return Ok(stock);
+              return Ok(await _stockRepository.Edit(id, stock));
             }
             else
             {
@@ -106,20 +97,18 @@ namespace los_api.Controllers
 
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete([FromRoute] Guid? id)
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
       try
       {
-        var stock = await _context.Stock.FindAsync(id);
+        var stock = await _stockRepository.GetById(id);
         if (stock == null)
         {
           return NotFound("Stock with Id = " + id.ToString() + " not found!");
         }
         else
         {
-          _context.Stock.Remove(stock);
-          await _context.SaveChangesAsync();
-          return Ok(await _context.Stock.ToListAsync());
+          return Ok(await _stockRepository.Delete(stock));
         }
       }
       catch (System.Exception ex)
@@ -127,7 +116,5 @@ namespace los_api.Controllers
         return BadRequest(ex);
       }
     }
-
-
   }
 }

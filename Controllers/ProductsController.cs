@@ -24,7 +24,7 @@ namespace los_api.Controllers
     {
       try
       {
-        return Ok(await _context.Product.ToListAsync());
+        return Ok(await _productRepository.GetAll());
       }
       catch (System.Exception ex)
       {
@@ -44,10 +44,7 @@ namespace los_api.Controllers
 
         if (ModelState.IsValid)
         {
-          product.Id = Guid.NewGuid();
-          _context.Product.Add(product);
-          await _context.SaveChangesAsync();
-          return Ok(product);
+          return Ok(await _productRepository.Create(product));
         }
         else
         {
@@ -72,12 +69,9 @@ namespace los_api.Controllers
           if (string.IsNullOrWhiteSpace(product.ImageUrl))
             return BadRequest($"{nameof(product.ImageUrl)} parameter should not be empty");
 
-          if (ProductExists(id))
+          if (_productRepository.isExists(id))
           {
-            product.Id = id;
-            _context.Product.Update(product);
-            await _context.SaveChangesAsync();
-            return Ok(product);
+            return Ok(await _productRepository.Edit(id, product));
           }
           else
           {
@@ -97,25 +91,23 @@ namespace los_api.Controllers
 
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> Delete([FromRoute] Guid? id)
+    public async Task<IActionResult> Delete([FromRoute] Guid id)
     {
       try
       {
-        var product = await _context.Product.FindAsync(id);
+        var product = await _productRepository.GetById(id);
         if (product == null)
         {
           return NotFound("Product with Id = " + id.ToString() + " not found!");
         }
         else
         {
-          var stock = await _context.Stock.FirstOrDefaultAsync(s => s.ProductId == product.Id);
+          var stock = await _stockRepository.GetByProductId(product.Id);
           if (stock != null)
           {
-            _context.Stock.Remove(stock);
+            await _stockRepository.Delete(stock);
           }
-          _context.Product.Remove(product);
-          await _context.SaveChangesAsync();
-          return Ok(await _context.Product.ToListAsync());
+          return Ok(await _productRepository.Delete(product));
         }
       }
       catch (System.Exception ex)

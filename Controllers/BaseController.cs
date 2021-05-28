@@ -6,33 +6,21 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using los_api.Data;
-using los_api.Models;
+using los_api.Services;
 
 namespace los_api.Controllers
 {
   public abstract class BaseController : Controller
   {
     protected readonly StoreContext _context;
+    protected readonly ProductRepository _productRepository;
+    protected readonly StockRepository _stockRepository;
 
     public BaseController(StoreContext context)
     {
       _context = context;
+      _productRepository = new ProductRepository(context);
+      _stockRepository = new StockRepository(context);
     }
-
-    protected bool ProductExists(Guid id)
-    {
-      return _context.Product.Any(e => e.Id == id);
-    }
-
-    protected bool StockExists(Guid id)
-    {
-      return _context.Stock.Any(e => e.Id == id);
-    }
-
-    protected bool StockExistsByProduct(Guid id)
-    {
-      return _context.Stock.Any(e => e.ProductId == id);
-    }
-
   }
 }

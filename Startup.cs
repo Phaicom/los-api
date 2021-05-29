@@ -28,6 +28,13 @@ namespace los_api
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+      // Add Cors
+      services.AddCors(o => o.AddPolicy("MyPolicy", builder =>
+      {
+        builder.AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader();
+      }));
       services.AddControllers();
       services.AddDbContext<StoreContext>(options => options.UseSqlite(Configuration.GetConnectionString("StoreContext")));
       services.AddSwaggerGen(c =>
@@ -39,6 +46,8 @@ namespace los_api
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
+      app.UseCors("MyPolicy");
+
       if (env.IsDevelopment())
       {
         app.UseDeveloperExceptionPage();
@@ -56,6 +65,7 @@ namespace los_api
       {
         endpoints.MapControllers();
       });
+
     }
   }
 }

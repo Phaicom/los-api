@@ -91,7 +91,7 @@ namespace los_api.Controllers
           if (_stockRepository.isExists(id))
           {
             var existStock = await _stockRepository.GetByProductId(stock.ProductId);
-            if (existStock == null)
+            if (existStock == null || existStock.Id.ToString() == id.ToString())
             {
               return Ok(await _stockRepository.Edit(id, stock));
             }

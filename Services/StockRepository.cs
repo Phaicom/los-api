@@ -30,7 +30,7 @@ namespace los_api.Services
 
     public async Task<Stock> GetByProductId(Guid id)
     {
-      return await _context.Stock.FirstOrDefaultAsync(s => s.ProductId == id);
+      return await _context.Stock.AsNoTracking().FirstOrDefaultAsync(s => s.ProductId == id);
     }
 
     public async Task<Stock> Create(Stock stock)
